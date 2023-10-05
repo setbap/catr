@@ -69,9 +69,27 @@ fn open_file(filename: &str) -> CatrResault<Box<dyn BufRead>> {
 pub fn run(_config: Config) -> CatrResault<()> {
     for filename in _config.files {
         match open_file(&filename) {
-            Ok(_) => println!("Opended : {}", filename),
             Err(err) => eprintln!("Error in Opening {} : {}", filename, err),
+            Ok(file) => {
+                println!("\n----------- {} ----------", filename);
+                let mut nonblocking_lines_num = 0;
+                for (i, line) in file.lines().enumerate() {
+                    let line = line?;
+
+                    if _config.number_line {
+                        print!("{:>2}\t", i + 1);
+                    }
+
+                    if _config.number_nonblank_lines && !line.is_empty() {
+                        print!("{:>2}\t", nonblocking_lines_num + 1);
+                        nonblocking_lines_num += 1;
+                    }
+
+                    println!("{}", line);
+                }
+            }
         }
+        println!("");
     }
     Ok(())
 }
