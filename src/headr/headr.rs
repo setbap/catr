@@ -1,25 +1,25 @@
 use std::{
     fs::File,
-    io::{self, BufRead, BufReader},
+    io::{self, BufRead, BufReader, Read},
 };
 
-use clap::{Arg, ArgAction, Command};
+use clap::{value_parser, Arg, ArgAction, Command};
 
 use crate::types::CustomResault;
 
 #[derive(Debug)]
 pub struct Config {
     files: Vec<String>,
-    number_line: bool,
-    number_nonblank_lines: bool,
+    lines: usize,
+    bytes: Option<usize>,
 }
 
 pub fn get_args() -> CustomResault<Config> {
-    let _matches = Command::new("Clap in Rust")
+    let _matches = Command::new("Head in Rust")
         .version("1.0.2")
         .author("Sina (Setbap)")
-        .about("Simple Cat in Rust")
-        .name("catr")
+        .about("Simple Head in Rust")
+        .name("headr")
         .arg(
             Arg::new("files")
                 .value_name("FILE")
@@ -28,20 +28,21 @@ pub fn get_args() -> CustomResault<Config> {
                 .default_value("-"),
         )
         .arg(
-            Arg::new("number")
+            Arg::new("lines")
                 .short('n')
-                .long("number")
+                .long("lines")
+                .value_parser(value_parser!(usize))
+                .default_value("10")
                 .help("Number of Lines")
-                .action(ArgAction::SetTrue)
-                .conflicts_with("number_nonblank"),
+                .conflicts_with("bytes"),
         )
         .arg(
-            Arg::new("number_nonblank")
-                .short('b')
-                .long("number-nonblank")
-                .help("Number non-block Lines")
-                .action(ArgAction::SetTrue)
-                .conflicts_with("number"),
+            Arg::new("bytes")
+                .short('c')
+                .long("bytes")
+                .value_parser(value_parser!(usize))
+                .help("count of bytes")
+                .conflicts_with("lines"),
         )
         .get_matches();
 
@@ -53,8 +54,8 @@ pub fn get_args() -> CustomResault<Config> {
         .collect();
     Ok(Config {
         files: _v,
-        number_line: _matches.get_flag("number"),
-        number_nonblank_lines: _matches.get_flag("number_nonblank"),
+        lines: *_matches.get_one("lines").unwrap(),
+        bytes: _matches.get_one("bytes").map(|f| *f),
     })
 }
 
@@ -71,20 +72,14 @@ pub fn run(_config: Config) -> CustomResault<()> {
             Err(err) => eprintln!("Error in Opening {} : {}", filename, err),
             Ok(file) => {
                 println!("\n----------- {} ----------", filename);
-                let mut nonblocking_lines_num = 0;
-                for (i, line) in file.lines().enumerate() {
-                    let line = line?;
-
-                    if _config.number_line {
-                        print!("{:>2}\t", i + 1);
+                let lines = _config.lines;
+                if let Some(byte) = _config.bytes {
+                    let bytes: Result<Vec<_>, _> = file.bytes().take(byte).collect();
+                    print!("{}", String::from_utf8_lossy(&bytes?));
+                } else {
+                    for line in file.lines().take(lines) {
+                        println!("{}", line?);
                     }
-
-                    if _config.number_nonblank_lines && !line.is_empty() {
-                        print!("{:>2}\t", nonblocking_lines_num + 1);
-                        nonblocking_lines_num += 1;
-                    }
-
-                    println!("{}", line);
                 }
             }
         }
