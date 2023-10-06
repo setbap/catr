@@ -15,8 +15,8 @@ pub struct Config {
 }
 
 pub fn get_args() -> CustomResault<Config> {
-    let _matches = Command::new("Clap in Rust")
-        .version("1.0.2")
+    let _matches = Command::new("Cat in Rust")
+        .version("0.0.1")
         .author("Sina (Setbap)")
         .about("Simple Cat in Rust")
         .name("catr")

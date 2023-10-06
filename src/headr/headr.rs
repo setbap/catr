@@ -3,7 +3,7 @@ use std::{
     io::{self, BufRead, BufReader, Read},
 };
 
-use clap::{value_parser, Arg, ArgAction, Command};
+use clap::{value_parser, Arg, Command};
 
 use crate::types::CustomResault;
 
@@ -16,7 +16,7 @@ pub struct Config {
 
 pub fn get_args() -> CustomResault<Config> {
     let _matches = Command::new("Head in Rust")
-        .version("1.0.2")
+        .version("0.0.1")
         .author("Sina (Setbap)")
         .about("Simple Head in Rust")
         .name("headr")
@@ -72,7 +72,9 @@ pub fn run(_config: Config) -> CustomResault<()> {
             Err(err) => eprintln!("Error in Opening {} : {}", filename, err),
             Ok(file) => {
                 println!("\n----------- {} ----------", filename);
+
                 let lines = _config.lines;
+
                 if let Some(byte) = _config.bytes {
                     let bytes: Result<Vec<_>, _> = file.bytes().take(byte).collect();
                     print!("{}", String::from_utf8_lossy(&bytes?));
