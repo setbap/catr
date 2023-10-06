@@ -3,6 +3,9 @@
 //
 // to run head
 // use clis::headr;
+//
+// to run wc
+use clis::wcr;
 
 fn main() {
     //  to run cat
@@ -10,4 +13,7 @@ fn main() {
 
     //  to run cat
     // headr::head()
+    //
+    //  to run cat
+    wcr::wc()
 }
